@@ -5,10 +5,10 @@
 
 #define THREADS_PER_BLOCK 1024
 
-unsigned int getmax(unsigned int *, unsigned int);
 unsigned int getmaxcu(unsigned int *, unsigned int);
+unsigned int getmax(unsigned int *, unsigned int);
 
-void printDeviceInfo()
+void getDeviceInfo()
 {
     int nDevices;
     cudaGetDeviceCount(&nDevices);
@@ -26,7 +26,7 @@ void printDeviceInfo()
         printf("  Peak Memory Bandwidth (GB/s): %f\n\n",
                2.0*prop.memoryClockRate*(prop.memoryBusWidth/8)/1.0e6);
     }
-} // End of the print device info function
+}
 
 
 
@@ -36,7 +36,8 @@ __global__ void getmaxCUDA1(unsigned int * num_d, int new_size, unsigned int * b
   int tid = threadIdx.x;
   int thread_id = blockDim.x * blockIdx.x + threadIdx.x;
 
-  //Grab the array from the global memory to shared memory.(In one block)
+
+ //Grab the array from the global memory to shared memory.(In one block)
    local_num[tid] = 0;
    if(thread_id < new_size) {
     local_num[tid] = num_d[thread_id];
@@ -85,19 +86,17 @@ int main(int argc, char *argv[])
        exit(1);
     }
 
-    printDeviceInfo();
+//   getDeviceInfo();
 
 
    srand(time(NULL)); // setting a seed for the random number generator
     // Fill-up the array with random numbers from 0 to size-1
     for( i = 0; i < size; i++){
        numbers[i] = rand()  % size;
-//       printf("number[%d] is %d\n",i, numbers[i]);
     }
     printf(" The maximum number in the array is: %u\n",
            getmaxcu(numbers, size));
-    printf(" The maximum number by sequential  in the array is: %u\n",
-           getmax(numbers, size));
+
     free(numbers);
     exit(0);
 }
@@ -159,6 +158,8 @@ unsigned int getmaxcu(unsigned int num[], unsigned int size)
 
 }
 
+
+//sequential code. not used.
 unsigned int getmax(unsigned int num[], unsigned int size)
 {
   unsigned int i;
